@@ -2,7 +2,7 @@ import type { INodeProperties } from 'n8n-workflow';
 
 export const getManyLlmMessagesFields: INodeProperties[] = [
 	// ----------------------------------------
-	//            LLM Messages: get one
+	//            LLM Messages: get many
 	// ----------------------------------------
 	{
 		displayName: 'Message ID',
