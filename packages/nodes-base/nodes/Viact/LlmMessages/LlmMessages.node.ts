@@ -85,7 +85,7 @@ export class LlmMessages implements INodeType {
 						value: 'keyClouds',
 					},
 				],
-				default: 'topics',
+				default: 'groupChats',
 			},
 			...groupChatsOperations,
 			...groupChatsFields,
@@ -103,6 +103,8 @@ export class LlmMessages implements INodeType {
 		const credentials = await this.getCredentials('viactLlmMessagesApi');
 		const apiKey = credentials.apiKey as string;
 
+		console.log('apiKey', apiKey);
+
 		for (let i = 0; i < items.length; i++) {
 			const resource = this.getNodeParameter('resource', 0) as string;
 			const operation = this.getNodeParameter('operation', 0) as string;
@@ -112,7 +114,7 @@ export class LlmMessages implements INodeType {
 				// Select operation
 				switch (resource) {
 					case 'groupChats':
-						if (operation == Operation.create) {
+						if (operation === Operation.create) {
 							const projectCode = this.getNodeParameter('projectCode', i, '') as string;
 							const name = this.getNodeParameter('name', i, '') as string;
 							const timestamp = this.getNodeParameter('timestamp', i, '') as string;
@@ -121,6 +123,32 @@ export class LlmMessages implements INodeType {
 									['api-key']: apiKey,
 								},
 								data: { projectCode, name, timestamp },
+							});
+						}
+						if (operation === Operation.getMany) {
+							const projectCode = this.getNodeParameter('projectCode', i, '') as string;
+							const name = this.getNodeParameter('name', i, '') as string;
+							const fromTimestamp = this.getNodeParameter('fromTimestamp', i, '') as string;
+							const toTimestamp = this.getNodeParameter('toTimestamp', i, '') as string;
+							const params: any = {};
+							if (projectCode) {
+								params.projectCode = projectCode;
+							}
+							if (name) {
+								params.name = name;
+							}
+							if (fromTimestamp) {
+								params.fromTimestamp = fromTimestamp;
+							}
+							if (toTimestamp) {
+								params.toTimestamp = toTimestamp;
+							}
+							console.log("params", params);
+							response = await HttpRequest(Methods.get, 'group-chats', {
+								headers: {
+									['api-key']: apiKey,
+								},
+								params,
 							});
 						}
 						break;
@@ -140,8 +168,6 @@ export class LlmMessages implements INodeType {
 					default:
 						throw new Error('Invalid resource!');
 				}
-
-				console.log('Data Response:\n', response);
 
 				Array.isArray(response)
 					? result.push(...(response as IDataObject[]))
